@@ -1,5 +1,6 @@
 import os
 import shutil
+from contextlib import asynccontextmanager
 
 from fastapi import (
     FastAPI,
@@ -18,14 +19,28 @@ from fastapi.responses import StreamingResponse
 from rag import stream_llm
 from rag import (
     add_document,
-    reset_session
+    reset_session,
+    restore_sessions
 )
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
 
-app = FastAPI()
+    print("Starting InterviewPrepAI...")
 
+    restore_sessions()
 
+    yield
+
+    print("Shutting down InterviewPrepAI...")
+
+app = FastAPI(lifespan=lifespan)
+
+# @app.on_event("startup")
+# def startup():
+
+#     restore_sessions()
 
 app.add_middleware(
     CORSMiddleware,

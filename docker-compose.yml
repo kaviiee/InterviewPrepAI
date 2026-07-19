@@ -12,7 +12,7 @@ services:
 
     volumes:
       - ./backend/uploads:/app/uploads
-
+      - ./backend/storage:/app/storage
 
   frontend:
     build:

@@ -1,5 +1,7 @@
 import os
 import shutil
+from pathlib import Path
+import json
 
 from langchain_community.document_loaders import (
     PyPDFLoader,
@@ -16,6 +18,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+FAISS_STORAGE_PATH = Path("storage/faiss")
+
+FAISS_STORAGE_PATH.mkdir(
+    parents=True,
+    exist_ok=True
+)
+
+SESSION_FILE = FAISS_STORAGE_PATH.parent / "sessions.json"
 
 embeddings = HuggingFaceEmbeddings(
     model_name="sentence-transformers/all-MiniLM-L6-v2"
@@ -60,8 +70,118 @@ def load_document(path):
 
     return loader.load()
 
+def get_faiss_path(session_id):
+
+    path = FAISS_STORAGE_PATH / session_id
+
+    path.mkdir(
+        parents=True,
+        exist_ok=True
+    )
+
+    return str(path)
 
 
+def save_vector_db(session_id, db):
+
+    path = get_faiss_path(session_id)
+    
+    print("Saving FAISS index to:", path)
+
+    db.save_local(
+        path
+    )
+    print("FAISS save complete")
+
+
+def save_sessions():
+
+    with open(
+        SESSION_FILE,
+        "w"
+    ) as f:
+
+        json.dump(
+            user_documents,
+            f,
+            indent=4
+        )
+
+
+
+def load_sessions():
+
+    global user_documents
+
+    if not SESSION_FILE.exists():
+        return
+
+
+    with open(
+        SESSION_FILE,
+        "r"
+    ) as f:
+
+        user_documents = json.load(f)
+
+
+def load_vector_db(session_id):
+
+    path = get_faiss_path(session_id)
+
+    index_file = os.path.join(
+        path,
+        "index.faiss"
+    )
+
+    if not os.path.exists(index_file):
+        return None
+
+
+    db = FAISS.load_local(
+        path,
+        embeddings,
+        allow_dangerous_deserialization=True
+    )
+
+    return db
+
+def restore_sessions():
+    
+    load_sessions()
+
+    if not FAISS_STORAGE_PATH.exists():
+        return
+
+
+    for session_id in os.listdir(
+        FAISS_STORAGE_PATH
+    ):
+
+        db = load_vector_db(
+            session_id
+        )
+
+        if db is not None:
+
+            user_db[session_id] = db
+
+
+            user_retriever[session_id] = (
+                db.as_retriever(
+                    search_type="mmr",
+                    search_kwargs={
+                        "k":10,
+                        "fetch_k":30
+                    }
+                )
+            )
+
+            print(
+                f"Restored FAISS index for {session_id}"
+            )
+            
+            
 def build_vector_db(session_id):
 
     docs = []
@@ -103,6 +223,11 @@ def build_vector_db(session_id):
         embeddings
     )
 
+
+    save_vector_db(
+        session_id,
+        db
+    )
 
     return db
 
@@ -150,7 +275,8 @@ def add_document(session_id, file_path, document_type):
 
     user_documents[session_id][document_type] = file_path
 
-
+    save_sessions()
+    
     user_db[session_id] = build_vector_db(session_id)
 
 
@@ -184,6 +310,14 @@ def reset_session(session_id):
         None
     )
 
+    faiss_path = FAISS_STORAGE_PATH / session_id
+
+    if faiss_path.exists():
+
+        shutil.rmtree(
+            faiss_path
+        )
+    save_sessions()
 
 
 
