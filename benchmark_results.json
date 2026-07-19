@@ -1,0 +1,25 @@
+{
+  "session_recovery": {
+    "avg_rebuild_seconds": 0.4937,
+    "avg_load_seconds": 0.0081,
+    "reduction_percent": 98.4,
+    "runs": 5
+  },
+  "streaming_latency": {
+    "avg_time_to_first_token_seconds": 0.5282,
+    "avg_full_completion_seconds": 4.6087,
+    "perceived_latency_reduction_percent": 88.5,
+    "runs": 5
+  },
+  "retrieval_latency": {
+    "avg_retrieval_seconds": 0.0115,
+    "min_seconds": 0.0101,
+    "max_seconds": 0.0153,
+    "num_queries_tested": 3,
+    "runs_per_query": 3
+  },
+  "index_footprint": {
+    "index_size_kb": 24.53,
+    "chunk_count": 8
+  }
+}
