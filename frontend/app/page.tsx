@@ -89,25 +89,32 @@ useEffect(() => {
 
     // create new session
     if (!stored) {
-
-      const res = await fetch(
-        `${API_URL}/session`
-        // "http://127.0.0.1:8000/session"
-      );
-
-
+      const res = await fetch(`${API_URL}/session`);
       const data = await res.json();
+      if (!data.session_id) {
+          throw new Error("Failed to create session");
+      }
+      stored = data.session_id as string;
+
+      localStorage.setItem("session_id", stored);
+      // const res = await fetch(
+      //   `${API_URL}/session`
+      //   // "http://127.0.0.1:8000/session"
+      // );
+
+
+      // const data = await res.json();
       
-      const newSessionId: string = data.session_id;
+      // const newSessionId: string = data.session_id;
 
 
-      // stored = data.session_id;
+      // // stored = data.session_id;
 
 
-      localStorage.setItem(
-        "session_id",
-        newSessionId
-      );
+      // localStorage.setItem(
+      //   "session_id",
+      //   newSessionId
+      // );
 
     }
     if (!stored) return;
@@ -136,12 +143,15 @@ useEffect(() => {
 
     }
 
-
-    if(status.job_uploaded){
-
+    if (status.job_description) {
+      setJobDescription(status.job_description);
       setJobSaved(true);
-
     }
+    // if(status.job_uploaded){
+
+    //   setJobSaved(true);
+
+    // }
 
   }
 

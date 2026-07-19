@@ -155,7 +155,8 @@ async def upload_resume(
     add_document(
         session_id,
         path,
-        "resume"
+        "resume",
+        file.filename
     )
 
 
@@ -260,16 +261,29 @@ def session_status(session_id: str):
     )
 
 
-    return {
-        "resume": (
-            os.path.basename(documents["resume"])
-            if documents.get("resume")
-            else None
-        ),
+    resume = documents.get("resume")
+    job = documents.get("job")
 
-        "job_uploaded": (
-            True
-            if documents.get("job")
-            else False
-        )
+    job_text = ""
+
+    if job:
+        with open(job["path"], "r", encoding="utf-8") as f:
+            job_text = f.read()
+
+    return {
+        "resume": resume["filename"] if resume else None,
+        "job_description": job_text
     }
+    # return {
+    #     "resume": (
+    #         os.path.basename(documents["resume"])
+    #         if documents.get("resume")
+    #         else None
+    #     ),
+
+    #     "job_uploaded": (
+    #         True
+    #         if documents.get("job")
+    #         else False
+    #     )
+    # }

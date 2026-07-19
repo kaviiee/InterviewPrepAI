@@ -194,12 +194,23 @@ def build_vector_db(session_id):
 
     documents = user_documents.get(session_id, {})
 
-    files = [
-        path 
-        for path in documents.values()
-        if path is not None
-    ]
+    # files = [
+    #     path 
+    #     for path in documents.values()
+    #     if path is not None
+    # ]
+    files = []
 
+    resume = documents.get("resume")
+    job = documents.get("job")
+
+    if resume:
+        files.append(resume["path"])
+
+    if job:
+        files.append(job["path"])
+    
+    
     for file in files:
 
         loaded = load_document(file)
@@ -264,7 +275,7 @@ def build_vector_db(session_id):
 #         )
 #     )
 
-def add_document(session_id, file_path, document_type):
+def add_document(session_id, file_path, document_type, original_filename=None):
 
     if session_id not in user_documents:
         user_documents[session_id] = {
@@ -273,8 +284,21 @@ def add_document(session_id, file_path, document_type):
         }
 
 
-    user_documents[session_id][document_type] = file_path
+    # user_documents[session_id][document_type] = file_path
+    if document_type == "resume":
 
+        user_documents[session_id]["resume"] = {
+            "path": file_path,
+            "filename": original_filename
+            # os.path.basename(file_path)
+        }
+
+    else:
+
+        user_documents[session_id]["job"] = {
+            "path": file_path
+        }
+        
     save_sessions()
     
     user_db[session_id] = build_vector_db(session_id)
@@ -295,11 +319,12 @@ def add_document(session_id, file_path, document_type):
 
 def reset_session(session_id):
 
-    user_documents.pop(
-        session_id,
-        None
-    )
-
+    # user_documents.pop(
+    #     session_id,
+    #     None
+    # )
+    if session_id in user_documents:
+        user_documents.pop(session_id)
     user_db.pop(
         session_id,
         None
