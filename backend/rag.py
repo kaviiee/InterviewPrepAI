@@ -42,7 +42,9 @@ SESSION_FILE = FAISS_STORAGE_PATH.parent / "sessions.json"
 
 embeddings = HuggingFaceEndpointEmbeddings(
     model="sentence-transformers/all-MiniLM-L6-v2",
-    huggingfacehub_api_token=os.getenv("HF_TOKEN")
+    huggingfacehub_api_token=os.getenv("HF_TOKEN"),
+    provider="hf-inference"
+
 )
 
 llm = ChatOpenAI(
