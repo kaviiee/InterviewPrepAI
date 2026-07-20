@@ -1,4 +1,5 @@
 venv/
+venv-clean/
 __pycache__/
 *.pyc
 .env

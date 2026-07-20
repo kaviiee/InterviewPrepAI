@@ -8,8 +8,11 @@ from langchain_community.document_loaders import (
     TextLoader
 )
 
+# from langchain_community.embeddings import HuggingFaceInferenceAPIEmbeddings
+from langchain_huggingface import HuggingFaceEndpointEmbeddings
+
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import HuggingFaceEmbeddings
+# from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 
 from langchain_openai import ChatOpenAI
@@ -27,10 +30,20 @@ FAISS_STORAGE_PATH.mkdir(
 
 SESSION_FILE = FAISS_STORAGE_PATH.parent / "sessions.json"
 
-embeddings = HuggingFaceEmbeddings(
-    model_name="sentence-transformers/all-MiniLM-L6-v2"
-)
+# embeddings = HuggingFaceEmbeddings(
+#     model_name="sentence-transformers/all-MiniLM-L6-v2"
+# )
 
+# embeddings = HuggingFaceInferenceAPIEmbeddings(
+#     api_key=os.getenv("HF_TOKEN"),
+#     model_name="sentence-transformers/all-MiniLM-L6-v2"
+# )
+
+
+embeddings = HuggingFaceEndpointEmbeddings(
+    model="sentence-transformers/all-MiniLM-L6-v2",
+    huggingfacehub_api_token=os.getenv("HF_TOKEN")
+)
 
 llm = ChatOpenAI(
     model="google/gemini-2.5-flash",
